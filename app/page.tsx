@@ -372,8 +372,8 @@ export default function JobsPage() {
           </div>
         )}
 
-        <div className="flex flex-col lg:flex-row gap-6 items-stretch">
-          <div className={`${selectedJob ? "flex-1" : "w-full"} transition-all duration-300 flex flex-col`}>
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className={`${selectedJob ? "flex-1" : "w-full"} transition-all duration-300`}>
             {isFormOpen && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
@@ -451,7 +451,7 @@ export default function JobsPage() {
             )}
 
             {viewMode === "calendar" && (
-              <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-3 sm:p-4 md:p-6 flex-1 flex flex-col">
+              <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-3 sm:p-4 md:p-6">
                 <Calendar
                   localizer={localizer}
                   events={jobs.filter(job => job.scheduled_at).map((job) => {
@@ -461,7 +461,7 @@ export default function JobsPage() {
                   })}
                   startAccessor="start"
                   endAccessor="end"
-                  style={{ flex: 1, minHeight: "450px" }}
+                  style={{ height: "600px" }}
                   className="text-sm"
                   onSelectEvent={(event: any) => setSelectedJob(event.resource as Job)}
                   views={["month", "week", "day"]}
