@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -12,15 +12,291 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 动画 */
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out;
+}
+
+/* React Big Calendar 商业化样式 */
+.rbc-calendar {
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.rbc-header {
+  padding: 10px 4px;
+  font-weight: 600;
+  font-size: 12px;
+  color: #475569;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.rbc-today {
+  background-color: #f1f5f9;
+}
+
+.rbc-off-range-bg {
+  background-color: #fafafa;
+}
+
+.rbc-event {
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.rbc-event:hover {
+  opacity: 0.9;
+}
+
+.rbc-event:focus {
+  outline: 2px solid #0f172a;
+  outline-offset: 1px;
+}
+
+.rbc-toolbar {
+  padding: 12px 0;
+  margin-bottom: 12px;
+  font-size: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rbc-toolbar button {
+  color: #475569;
+  border: 1px solid #e2e8f0 !important;
+  background-color: white !important;
+  padding: 6px 14px;
+  border-radius: 2px;
+  font-weight: 500;
+  font-size: 13px;
+  transition: all 0.15s;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.rbc-toolbar button:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: #0f172a !important;
+  color: white !important;
+  border-color: #0f172a !important;
+}
+
+.rbc-toolbar button.rbc-active:hover {
+  background-color: #1e293b !important;
+}
+
+.rbc-btn-group {
+  display: inline-flex;
+}
+
+.rbc-btn-group button {
+  position: relative;
+  z-index: 1;
+}
+
+.rbc-toolbar-label {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.rbc-month-view,
+.rbc-time-view {
+  border: 1px solid #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.rbc-day-bg {
+  border-left: 1px solid #e2e8f0;
+}
+
+.rbc-month-row {
+  border-top: 1px solid #e2e8f0;
+}
+
+.rbc-date-cell {
+  padding: 4px 8px;
+  text-align: right;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.rbc-date-cell.rbc-now {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.rbc-row-segment {
+  padding: 0 2px 2px 2px;
+}
+
+.rbc-show-more {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  padding: 2px 4px;
+}
+
+.rbc-show-more:hover {
+  color: #0f172a;
+}
+
+/* 周视图和日视图样式 */
+.rbc-time-header {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rbc-time-content {
+  border-top: none;
+}
+
+.rbc-timeslot-group {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.rbc-time-slot {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.rbc-current-time-indicator {
+  background-color: #dc2626;
+  height: 2px;
+}
+
+/* 响应式日历 */
+@media (max-width: 640px) {
+  .rbc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .rbc-toolbar-label {
+    order: -1;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  
+  .rbc-btn-group {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .rbc-toolbar button {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .rbc-header {
+    padding: 8px 2px;
+    font-size: 11px;
+  }
+  
+  .rbc-date-cell {
+    padding: 2px 4px;
+    font-size: 12px;
+  }
+  
+  .rbc-event {
+    font-size: 11px;
+    padding: 1px 4px;
+  }
+}
+
+/* 平板响应式 */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .rbc-toolbar {
+    gap: 12px;
+  }
+  
+  .rbc-toolbar button {
+    padding: 8px 16px;
+  }
+  
+  .rbc-header {
+    font-size: 11px;
+  }
+  
+  .rbc-event {
+    font-size: 11px;
+  }
+}
+
+
+/* 日历高度响应式 */
+@media (min-width: 768px) {
+  .rbc-calendar {
+    min-height: 550px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .rbc-calendar {
+    min-height: 600px !important;
+  }
+}
+
+/* 表格响应式优化 */
+@media (max-width: 1023px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  button, a, .cursor-pointer {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .rbc-toolbar button {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
 }
