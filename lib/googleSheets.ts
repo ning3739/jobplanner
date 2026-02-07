@@ -42,7 +42,7 @@ export async function getAllJobs(): Promise<Job[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A2:J`, // 从第二行开始读取（跳过标题行）
+    range: `${SHEET_NAME}!A2:K`, // 从第二行开始读取（跳过标题行）
   });
 
   const rows = response.data.values || [];
@@ -58,6 +58,7 @@ export async function getAllJobs(): Promise<Job[]> {
     price: String(row[7] || "").trim(),
     payment_status: String(row[8] || "").trim(),
     notes: String(row[9] || "").trim(),
+    email: String(row[10] || "").trim(),
   }));
 }
 
@@ -89,12 +90,13 @@ export async function addJob(job: Omit<Job, "job_id">): Promise<Job> {
       newJob.price,
       newJob.payment_status,
       newJob.notes,
+      newJob.email,
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:J`,
+    range: `${SHEET_NAME}!A:K`,
     valueInputOption: "RAW",
     requestBody: {
       values,
@@ -147,15 +149,16 @@ export async function updateJob(
       updatedJob.price,
       updatedJob.payment_status,
       updatedJob.notes,
+      updatedJob.email,
     ],
   ];
 
-  console.log("Writing to range:", `${SHEET_NAME}!A${actualRow}:J${actualRow}`);
+  console.log("Writing to range:", `${SHEET_NAME}!A${actualRow}:K${actualRow}`);
   console.log("Values:", values);
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A${actualRow}:J${actualRow}`,
+    range: `${SHEET_NAME}!A${actualRow}:K${actualRow}`,
     valueInputOption: "RAW",
     requestBody: {
       values,

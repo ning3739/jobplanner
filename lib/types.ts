@@ -22,4 +22,5 @@ export interface Job {
   price: string;
   payment_status: string;
   notes: string;
+  email: string;
 }

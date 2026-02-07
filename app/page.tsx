@@ -32,6 +32,8 @@ import {
   MoreHorizontal,
   X,
   StickyNote,
+  Mail,
+  ArrowLeft,
 } from "lucide-react";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
@@ -96,6 +98,7 @@ export default function JobsPage() {
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [calendarView, setCalendarView] = useState<"month" | "week" | "day">("month");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; jobId: string | null }>({ isOpen: false, jobId: null });
   const [formData, setFormData] = useState({
     service_type: "",
     customer_name: "",
@@ -106,6 +109,7 @@ export default function JobsPage() {
     price: "",
     payment_status: "unpaid",
     notes: "",
+    email: "",
   });
 
   useEffect(() => {
@@ -187,8 +191,18 @@ export default function JobsPage() {
     }
   };
 
-  const handleDeleteJob = async (jobId: string) => {
-    if (!confirm("Are you sure you want to delete this job?")) return;
+  const openDeleteConfirm = (jobId: string) => {
+    setDeleteConfirm({ isOpen: true, jobId });
+  };
+
+  const closeDeleteConfirm = () => {
+    setDeleteConfirm({ isOpen: false, jobId: null });
+  };
+
+  const handleDeleteJob = async () => {
+    if (!deleteConfirm.jobId) return;
+    const jobId = deleteConfirm.jobId;
+    closeDeleteConfirm();
     try {
       const response = await fetch(`/api/jobs/${jobId}`, { method: "DELETE" });
       const result = await response.json();
@@ -214,12 +228,13 @@ export default function JobsPage() {
       price: job.price,
       payment_status: job.payment_status,
       notes: job.notes || "",
+      email: job.email || "",
     });
     setIsFormOpen(true);
   };
 
   const resetForm = () => {
-    setFormData({ service_type: "", customer_name: "", address: "", phone: "", job_status: "pending", scheduled_at: "", price: "", payment_status: "unpaid", notes: "" });
+    setFormData({ service_type: "", customer_name: "", address: "", phone: "", job_status: "pending", scheduled_at: "", price: "", payment_status: "unpaid", notes: "", email: "" });
     setEditingJob(null);
     setIsFormOpen(false);
   };
@@ -412,6 +427,10 @@ export default function JobsPage() {
                         <input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full px-3 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm" placeholder="Enter phone number" required />
                       </div>
                       <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                        <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-3 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm" placeholder="Enter email address" />
+                      </div>
+                      <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Job Status</label>
                         <select value={formData.job_status} onChange={(e) => setFormData({ ...formData, job_status: e.target.value })} className="w-full px-3 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm">
                           <option value="pending">Pending</option>
@@ -491,6 +510,7 @@ export default function JobsPage() {
                         <th className="px-4 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">Service</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">Customer</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">Phone</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">Email</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">Status</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">Scheduled</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-slate-200 uppercase tracking-wider">Price</th>
@@ -501,7 +521,7 @@ export default function JobsPage() {
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-100">
                       {jobs.length === 0 ? (
-                        <tr><td colSpan={10} className="px-4 py-12 text-center text-slate-500"><FileText className="w-8 h-8 mx-auto mb-2 text-slate-300" /><p>No jobs found</p></td></tr>
+                        <tr><td colSpan={11} className="px-4 py-12 text-center text-slate-500"><FileText className="w-8 h-8 mx-auto mb-2 text-slate-300" /><p>No jobs found</p></td></tr>
                       ) : (
                         jobs.map((job, index) => (
                           <tr key={`${job.job_id}-${index}`} onClick={() => setSelectedJob(job)} className={`hover:bg-slate-50 cursor-pointer transition ${selectedJob?.job_id === job.job_id ? "bg-slate-50 border-l-2 border-l-slate-900" : ""}`}>
@@ -509,6 +529,7 @@ export default function JobsPage() {
                             <td className="px-4 py-3 text-sm text-slate-700"><span className="inline-flex items-center gap-1.5">{serviceTypeIcons[job.service_type]}{serviceTypeNames[job.service_type] || job.service_type}</span></td>
                             <td className="px-4 py-3 text-sm font-medium text-slate-900">{job.customer_name}</td>
                             <td className="px-4 py-3 text-sm text-slate-600">{job.phone}</td>
+                            <td className="px-4 py-3 text-sm text-slate-600">{job.email || "-"}</td>
                             <td className="px-4 py-3"><span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-sm ${job.job_status === "completed" ? "bg-emerald-50 text-emerald-700" : job.job_status === "in_progress" ? "bg-amber-50 text-amber-700" : job.job_status === "pending" ? "bg-slate-100 text-slate-700" : "bg-red-50 text-red-700"}`}>{jobStatusNames[job.job_status] || job.job_status}</span></td>
                             <td className="px-4 py-3 text-sm text-slate-600">{job.scheduled_at || "-"}</td>
                             <td className="px-4 py-3 text-sm font-medium text-slate-900">{job.price || "-"}</td>
@@ -517,7 +538,7 @@ export default function JobsPage() {
                             <td className="px-4 py-3 text-sm">
                               <div className="flex items-center gap-2">
                                 <button onClick={(e) => { e.stopPropagation(); startEdit(job); }} className="text-slate-500 hover:text-slate-700 p-1 rounded hover:bg-slate-100" title="Edit"><Edit2 className="w-4 h-4" /></button>
-                                <button onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.job_id); }} className="text-slate-500 hover:text-red-600 p-1 rounded hover:bg-red-50" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); openDeleteConfirm(job.job_id); }} className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50" title="Delete"><Trash2 className="w-4 h-4" /></button>
                               </div>
                             </td>
                           </tr>
@@ -537,7 +558,7 @@ export default function JobsPage() {
                           <div><span className="text-xs text-slate-500">#{job.job_id}</span><h3 className="font-medium text-slate-900">{job.customer_name}</h3></div>
                           <div className="flex items-center gap-1">
                             <button onClick={(e) => { e.stopPropagation(); startEdit(job); }} className="text-slate-400 hover:text-slate-600 p-1.5"><Edit2 className="w-4 h-4" /></button>
-                            <button onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.job_id); }} className="text-slate-400 hover:text-red-600 p-1.5"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); openDeleteConfirm(job.job_id); }} className="text-red-400 hover:text-red-600 p-1.5"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -557,54 +578,135 @@ export default function JobsPage() {
               </div>
             )}
           </div>
-
-          {selectedJob && (
-            <div className="hidden md:block w-full lg:w-96 bg-white rounded-sm shadow-sm border border-slate-200 p-5 relative animate-slide-in flex-shrink-0">
-              <button onClick={() => setSelectedJob(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"><X className="w-5 h-5" /></button>
-              <h2 className="text-lg font-semibold text-slate-900 mb-5 pb-3 border-b border-slate-200 flex items-center gap-2"><FileText className="w-5 h-5" />Job Details</h2>
-              <div className="space-y-4">
-                <div><label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Job ID</label><p className="text-base font-semibold text-slate-900 mt-0.5">#{selectedJob.job_id}</p></div>
-                <div><label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Service Type</label><p className="text-sm text-slate-700 mt-0.5 flex items-center gap-1.5">{serviceTypeIcons[selectedJob.service_type]}{serviceTypeNames[selectedJob.service_type] || selectedJob.service_type}</p></div>
-                <div><label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Customer</label><p className="text-sm font-medium text-slate-900 mt-0.5 flex items-center gap-1.5"><User className="w-4 h-4 text-slate-400" />{selectedJob.customer_name}</p></div>
-                <div><label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Phone</label><p className="text-sm text-slate-700 mt-0.5 flex items-center gap-1.5"><Phone className="w-4 h-4 text-slate-400" />{selectedJob.phone}</p></div>
-                <div><label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Address</label><p className="text-sm text-slate-700 mt-0.5 flex items-start gap-1.5"><MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />{selectedJob.address}</p></div>
-                <div><label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Status</label><div className="mt-1"><span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-sm ${selectedJob.job_status === "completed" ? "bg-emerald-50 text-emerald-700" : selectedJob.job_status === "in_progress" ? "bg-amber-50 text-amber-700" : selectedJob.job_status === "pending" ? "bg-slate-100 text-slate-700" : "bg-red-50 text-red-700"}`}>{selectedJob.job_status === "completed" && <CheckCircle className="w-3.5 h-3.5" />}{selectedJob.job_status === "in_progress" && <Circle className="w-3.5 h-3.5" />}{selectedJob.job_status === "pending" && <AlertCircle className="w-3.5 h-3.5" />}{selectedJob.job_status === "cancelled" && <XCircle className="w-3.5 h-3.5" />}{jobStatusNames[selectedJob.job_status] || selectedJob.job_status}</span></div></div>
-                <div><label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Scheduled At</label><p className="text-sm text-slate-700 mt-0.5 flex items-center gap-1.5"><Clock className="w-4 h-4 text-slate-400" />{formatDateTime(selectedJob.scheduled_at)}</p></div>
-                <div><label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Price</label><p className="text-lg font-semibold text-slate-900 mt-0.5 flex items-center gap-1.5"><DollarSign className="w-5 h-5 text-slate-400" />{selectedJob.price || "Not set"}</p></div>
-                <div><label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Payment</label><div className="mt-1"><span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-sm ${selectedJob.payment_status === "paid" ? "bg-emerald-50 text-emerald-700" : selectedJob.payment_status === "partial" ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700"}`}>{selectedJob.payment_status === "paid" && <CheckCircle className="w-3.5 h-3.5" />}{selectedJob.payment_status === "partial" && <AlertCircle className="w-3.5 h-3.5" />}{selectedJob.payment_status === "unpaid" && <XCircle className="w-3.5 h-3.5" />}{paymentStatusNames[selectedJob.payment_status] || selectedJob.payment_status}</span></div></div>
-                {selectedJob.notes && <div><label className="text-xs font-medium text-slate-500 uppercase tracking-wide flex items-center gap-1"><StickyNote className="w-3.5 h-3.5" />Notes</label><p className="text-sm text-slate-700 mt-1 bg-slate-50 px-3 py-2 rounded-sm whitespace-pre-wrap">{selectedJob.notes}</p></div>}
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-200 flex gap-2">
-                <button onClick={() => { startEdit(selectedJob); setSelectedJob(null); }} className="flex-1 bg-slate-900 text-white px-3 py-2 rounded-sm hover:bg-slate-800 transition text-sm font-medium flex items-center justify-center gap-1.5"><Edit2 className="w-4 h-4" />Edit</button>
-                <button onClick={() => { handleDeleteJob(selectedJob.job_id); setSelectedJob(null); }} className="flex-1 border border-red-200 text-red-600 px-3 py-2 rounded-sm hover:bg-red-50 transition text-sm font-medium flex items-center justify-center gap-1.5"><Trash2 className="w-4 h-4" />Delete</button>
-              </div>
-            </div>
-          )}
         </div>
       </main>
 
       {selectedJob && (
-        <div className="md:hidden fixed inset-0 bg-black/50 z-50 flex items-end">
-          <div className="bg-white w-full max-h-[80vh] overflow-y-auto rounded-t-lg animate-slide-up">
-            <div className="sticky top-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-              <h2 className="font-semibold text-slate-900">Job Details</h2>
-              <button onClick={() => setSelectedJob(null)} className="text-slate-400 p-1"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 bg-slate-50 z-50 overflow-y-auto">
+          <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center h-16 gap-4">
+                <button onClick={() => setSelectedJob(null)} className="text-slate-500 hover:text-slate-700 p-2 rounded-sm hover:bg-slate-100 transition flex items-center gap-2">
+                  <ArrowLeft className="w-5 h-5" />
+                  <span className="hidden sm:inline text-sm font-medium">Back to Jobs</span>
+                </button>
+              </div>
             </div>
-            <div className="p-4 space-y-3">
-              <div className="flex items-center justify-between"><span className="text-sm text-slate-500">Job ID</span><span className="font-medium">#{selectedJob.job_id}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-slate-500">Service</span><span className="flex items-center gap-1">{serviceTypeIcons[selectedJob.service_type]}{serviceTypeNames[selectedJob.service_type]}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-slate-500">Customer</span><span className="font-medium">{selectedJob.customer_name}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-slate-500">Phone</span><span>{selectedJob.phone}</span></div>
-              <div><span className="text-sm text-slate-500">Address</span><p className="mt-1 text-sm">{selectedJob.address}</p></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-slate-500">Status</span><span className={`px-2 py-0.5 text-xs font-medium rounded-sm ${selectedJob.job_status === "completed" ? "bg-emerald-50 text-emerald-700" : selectedJob.job_status === "in_progress" ? "bg-amber-50 text-amber-700" : selectedJob.job_status === "pending" ? "bg-slate-100 text-slate-700" : "bg-red-50 text-red-700"}`}>{jobStatusNames[selectedJob.job_status]}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-slate-500">Scheduled</span><span className="text-sm">{formatDateTime(selectedJob.scheduled_at)}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-slate-500">Price</span><span className="font-semibold">{selectedJob.price || "Not set"}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-slate-500">Payment</span><span className={`px-2 py-0.5 text-xs font-medium rounded-sm ${selectedJob.payment_status === "paid" ? "bg-emerald-50 text-emerald-700" : selectedJob.payment_status === "partial" ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700"}`}>{paymentStatusNames[selectedJob.payment_status]}</span></div>
-              {selectedJob.notes && <div><span className="text-sm text-slate-500">Notes</span><p className="mt-1 text-sm bg-slate-50 p-2 rounded-sm">{selectedJob.notes}</p></div>}
+          </header>
+
+          <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-sm text-slate-500">Job #{selectedJob.job_id}</span>
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-sm ${selectedJob.job_status === "completed" ? "bg-emerald-50 text-emerald-700" : selectedJob.job_status === "in_progress" ? "bg-amber-50 text-amber-700" : selectedJob.job_status === "pending" ? "bg-slate-100 text-slate-700" : "bg-red-50 text-red-700"}`}>
+                    {selectedJob.job_status === "completed" && <CheckCircle className="w-3.5 h-3.5" />}
+                    {selectedJob.job_status === "in_progress" && <Circle className="w-3.5 h-3.5" />}
+                    {selectedJob.job_status === "pending" && <AlertCircle className="w-3.5 h-3.5" />}
+                    {selectedJob.job_status === "cancelled" && <XCircle className="w-3.5 h-3.5" />}
+                    {jobStatusNames[selectedJob.job_status] || selectedJob.job_status}
+                  </span>
+                </div>
+                <h1 className="text-2xl font-bold text-slate-900">{selectedJob.customer_name}</h1>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { startEdit(selectedJob); setSelectedJob(null); }} className="bg-slate-900 text-white px-4 py-2.5 rounded-sm hover:bg-slate-800 transition text-sm font-medium flex items-center gap-2">
+                  <Edit2 className="w-4 h-4" />Edit Job
+                </button>
+                <button onClick={() => openDeleteConfirm(selectedJob.job_id)} className="border border-red-200 text-red-600 px-4 py-2.5 rounded-sm hover:bg-red-50 transition text-sm font-medium flex items-center gap-2">
+                  <Trash2 className="w-4 h-4" />Delete
+                </button>
+              </div>
             </div>
-            <div className="sticky bottom-0 bg-white border-t border-slate-200 p-4 flex gap-2">
-              <button onClick={() => { startEdit(selectedJob); setSelectedJob(null); }} className="flex-1 bg-slate-900 text-white py-2.5 rounded-sm text-sm font-medium">Edit</button>
-              <button onClick={() => { handleDeleteJob(selectedJob.job_id); setSelectedJob(null); }} className="flex-1 border border-red-200 text-red-600 py-2.5 rounded-sm text-sm font-medium">Delete</button>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-6">
+                  <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-4">Customer Information</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="text-xs text-slate-500">Name</label>
+                      <p className="text-sm font-medium text-slate-900 mt-1 flex items-center gap-2"><User className="w-4 h-4 text-slate-400" />{selectedJob.customer_name}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500">Phone</label>
+                      <p className="text-sm text-slate-900 mt-1 flex items-center gap-2"><Phone className="w-4 h-4 text-slate-400" />{selectedJob.phone}</p>
+                    </div>
+                    {selectedJob.email && (
+                      <div>
+                        <label className="text-xs text-slate-500">Email</label>
+                        <p className="text-sm text-slate-900 mt-1 flex items-center gap-2"><Mail className="w-4 h-4 text-slate-400" />{selectedJob.email}</p>
+                      </div>
+                    )}
+                    <div className={selectedJob.email ? "" : "sm:col-span-2"}>
+                      <label className="text-xs text-slate-500">Address</label>
+                      <p className="text-sm text-slate-900 mt-1 flex items-start gap-2"><MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />{selectedJob.address}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-6">
+                  <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-4">Job Details</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="text-xs text-slate-500">Service Type</label>
+                      <p className="text-sm text-slate-900 mt-1 flex items-center gap-2">{serviceTypeIcons[selectedJob.service_type]}{serviceTypeNames[selectedJob.service_type] || selectedJob.service_type}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500">Scheduled At</label>
+                      <p className="text-sm text-slate-900 mt-1 flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" />{formatDateTime(selectedJob.scheduled_at)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedJob.notes && (
+                  <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-6">
+                    <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-4 flex items-center gap-2"><StickyNote className="w-4 h-4" />Notes</h2>
+                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{selectedJob.notes}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-6">
+                  <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-4">Payment</h2>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs text-slate-500">Amount</label>
+                      <p className="text-3xl font-bold text-slate-900 mt-1">${selectedJob.price || "0"}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500">Status</label>
+                      <div className="mt-2">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-sm ${selectedJob.payment_status === "paid" ? "bg-emerald-50 text-emerald-700" : selectedJob.payment_status === "partial" ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700"}`}>
+                          {selectedJob.payment_status === "paid" && <CheckCircle className="w-4 h-4" />}
+                          {selectedJob.payment_status === "partial" && <AlertCircle className="w-4 h-4" />}
+                          {selectedJob.payment_status === "unpaid" && <XCircle className="w-4 h-4" />}
+                          {paymentStatusNames[selectedJob.payment_status] || selectedJob.payment_status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      )}
+
+      {deleteConfirm.isOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-sm w-full max-w-md shadow-xl">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-red-50 rounded-full mx-auto mb-4">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 text-center mb-2">Delete Job</h3>
+              <p className="text-sm text-slate-500 text-center">Are you sure you want to delete this job? This action cannot be undone.</p>
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button onClick={closeDeleteConfirm} className="flex-1 px-4 py-2.5 border border-slate-200 rounded-sm hover:bg-slate-50 transition text-sm font-medium text-slate-700">Cancel</button>
+              <button onClick={() => { handleDeleteJob(); setSelectedJob(null); }} className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-sm hover:bg-red-700 transition text-sm font-medium">Delete</button>
             </div>
           </div>
         </div>
