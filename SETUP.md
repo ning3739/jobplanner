@@ -10,6 +10,38 @@
 - ✅ 删除工作
 - ✅ 实时数据同步到 Google Sheets
 
+## Vercel 部署
+
+### 1. 导入项目
+
+1. 访问 [Vercel](https://vercel.com)
+2. 点击 "Add New" -> "Project"
+3. 导入你的 GitHub 仓库 `ning3739/jobplanner`
+
+### 2. 配置环境变量
+
+在 Vercel 项目设置中添加以下环境变量：
+
+| 变量名 | 值 |
+|--------|-----|
+| `GOOGLE_SPREADSHEET_ID` | 你的 Google Sheets ID |
+| `GOOGLE_SHEET_NAME` | Job |
+| `GOOGLE_SERVICE_ACCOUNT_KEY` | 整个 JSON 凭证内容（见下方说明） |
+
+**获取 GOOGLE_SERVICE_ACCOUNT_KEY：**
+
+1. 打开你的 `credentials/google-service-account.json` 文件
+2. 复制整个 JSON 内容（包括大括号）
+3. 粘贴到 Vercel 环境变量的值中
+
+### 3. 部署
+
+点击 "Deploy" 按钮，Vercel 会自动构建和部署你的应用。
+
+---
+
+## 本地开发设置
+
 ## 重要设置步骤
 
 ### 1. 启用 Google Sheets API

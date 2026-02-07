@@ -1,22 +1,36 @@
 import { google } from "googleapis";
-import path from "path";
 import { Job } from "./types";
 
 // Google Sheets 客户端
 export async function getGoogleSheetsClient() {
+  // 支持两种方式：环境变量（Vercel）或本地文件
+  const credentials = process.env.GOOGLE_SERVICE_ACCOUNT_KEY
+    ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY)
+    : null;
+
+  if (!credentials) {
+    // 本地开发时使用文件
+    const path = await import("path");
+    const auth = new google.auth.GoogleAuth({
+      keyFile: path.join(
+        process.cwd(),
+        "credentials",
+        "google-service-account.json",
+      ),
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+    const client = await auth.getClient();
+    return google.sheets({ version: "v4", auth: client as any });
+  }
+
+  // Vercel 部署时使用环境变量
   const auth = new google.auth.GoogleAuth({
-    keyFile: path.join(
-      process.cwd(),
-      "credentials",
-      "google-service-account.json",
-    ),
+    credentials,
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 
   const client = await auth.getClient();
-  const sheets = google.sheets({ version: "v4", auth: client as any });
-
-  return sheets;
+  return google.sheets({ version: "v4", auth: client as any });
 }
 
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || "";
